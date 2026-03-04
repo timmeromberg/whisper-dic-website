@@ -23,7 +23,7 @@
   ];
 
   const benchmarks = [
-    { tool: "whisper-dic (Groq)", type: "Cloud + LLM", latency: "626ms", cost: "Free" },
+    { tool: "whispervibe (Groq)", type: "Cloud + LLM", latency: "626ms", cost: "Free" },
     { tool: "Wispr Flow", type: "Cloud + LLM", latency: "~700ms", cost: "$8/mo" },
     { tool: "Superwhisper (Large)", type: "Local", latency: "2-3s", cost: "$8/mo" },
     { tool: "Apple Dictation", type: "On-device", latency: "Sub-300ms*", cost: "Free" }
@@ -68,13 +68,13 @@
             <div class="w-3 h-3 rounded-full bg-[#ffbd2e]"></div>
             <div class="w-3 h-3 rounded-full bg-[#27c93f]"></div>
           </div>
-          <span class="text-[10px] font-mono text-[var(--text-tertiary)] ml-2">whisper-dic --demo</span>
+          <span class="text-[10px] font-mono text-[var(--text-tertiary)] ml-2">whispervibe --demo</span>
         </div>
         <div class="text-left font-mono text-sm space-y-2">
           <p class="text-[var(--text-tertiary)] italic">// You say:</p>
           <p class="text-white">"Um, hey Claude, could you, uh, refactor this function to use, like, async await?"</p>
           <div class="h-4"></div>
-          <p class="text-[var(--accent)] italic">// whisper-dic writes instantly:</p>
+          <p class="text-[var(--accent)] italic">// whispervibe writes instantly:</p>
           <p class="text-[var(--green)]">"Refactor this function to use async/await."</p>
         </div>
       </div>
@@ -114,7 +114,7 @@
           <tbody>
             {#each benchmarks as row}
               <tr class="border-b border-[var(--border-subtle)] hover:bg-[var(--bg-hover)] transition-colors">
-                <td class="p-4 font-bold {row.tool.includes('whisper-dic') ? 'text-[var(--accent)]' : ''}">{row.tool}</td>
+                <td class="p-4 font-bold {row.tool.includes('whispervibe') ? 'text-[var(--accent)]' : ''}">{row.tool}</td>
                 <td class="p-4 text-[var(--text-secondary)]">{row.type}</td>
                 <td class="p-4">{row.latency}</td>
                 <td class="p-4 text-[var(--text-secondary)]">{row.cost}</td>
@@ -134,7 +134,7 @@
     <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
       <div class="flex items-center gap-3">
         <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--accent)] to-[#a855f7] flex items-center justify-center font-bold text-white shadow-lg">W</div>
-        <span class="font-bold text-[var(--text-secondary)] tracking-tight">whisper-dic</span>
+        <span class="font-bold text-[var(--text-secondary)] tracking-tight">whispervibe</span>
       </div>
       
       <div class="flex gap-8 text-sm text-[var(--text-secondary)]">

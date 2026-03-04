@@ -4,7 +4,7 @@
 </script>
 
 <svelte:head>
-  <title>whisper-dic | Speak your prompts. Stop typing. Start shipping.</title>
+  <title>whispervibe | Speak your prompts. Stop typing. Start shipping.</title>
   <meta name="description" content="System-wide hold-to-dictate for macOS, Windows, and Linux. AI-powered cleanup for perfect prompts, every time." />
 </svelte:head>
 

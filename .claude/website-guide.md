@@ -1,6 +1,6 @@
 # Website Guide
 
-Static landing page for whisper-dic.
+Static landing page for whispervibe.
 
 ## Architecture
 

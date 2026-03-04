@@ -1,4 +1,4 @@
-# CLAUDE Index (whisper-dic-website)
+# CLAUDE Index (whispervibe)
 
 This file is an index only.
 
