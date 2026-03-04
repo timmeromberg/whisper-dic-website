@@ -28,15 +28,33 @@
   let activeVibe = $state(vibes[0]);
   let displayedOutput = $state('');
   let isTyping = $state(false);
+  let showPasted = $state(false);
+  let typingTimeout: ReturnType<typeof setTimeout>;
 
-  async function typeOutput(text: string) {
+  function typeOutput(text: string) {
+    // Clear any existing animation
+    clearTimeout(typingTimeout);
     isTyping = true;
     displayedOutput = '';
-    for (let i = 0; i < text.length; i++) {
-      displayedOutput += text[i];
-      await new Promise(r => setTimeout(r, 20 + Math.random() * 30));
+    showPasted = false;
+    
+    let i = 0;
+    
+    function step() {
+      if (i < text.length) {
+        displayedOutput += text[i];
+        i++;
+        typingTimeout = setTimeout(step, 20 + Math.random() * 30);
+      } else {
+        isTyping = false;
+        typingTimeout = setTimeout(() => {
+          showPasted = true;
+          typingTimeout = setTimeout(() => showPasted = false, 1500);
+        }, 500);
+      }
     }
-    isTyping = false;
+    
+    step();
   }
 
   $effect(() => {
@@ -97,11 +115,11 @@
       </p>
 
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-        <a href="https://github.com/timmeromberg/whisper-dic" class="px-8 py-4 rounded-[var(--radius)] bg-[var(--accent)] text-white font-semibold shadow-[0_0_20px_var(--accent-glow)] hover:scale-105 transition-transform">
-          Download for macOS
+        <a href="https://github.com/timmeromberg/whisper-dic/releases" class="px-8 py-4 rounded-[var(--radius)] bg-[var(--accent)] text-white font-semibold shadow-[0_0_20px_var(--accent-glow)] hover:scale-105 transition-transform flex items-center gap-2">
+          <span></span> Download for macOS
         </a>
-        <a href="https://github.com/timmeromberg/whisper-dic" class="px-8 py-4 rounded-[var(--radius)] bg-[var(--bg-raised)] border border-[var(--border-default)] text-[var(--text-primary)] font-semibold hover:bg-[var(--bg-hover)] transition-colors">
-          View on GitHub
+        <a href="https://github.com/timmeromberg/whisper-dic/releases" class="px-8 py-4 rounded-[var(--radius)] bg-[var(--bg-raised)] border border-[var(--border-default)] text-[var(--text-primary)] font-semibold hover:bg-[var(--bg-hover)] transition-colors flex items-center gap-2">
+          <span>⊞</span> Download for Windows
         </a>
       </div>
 
@@ -118,42 +136,49 @@
           {/each}
         </div>
 
-        <div class="p-6 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] backdrop-blur-sm relative overflow-hidden">
+        <div class="p-6 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] backdrop-blur-sm relative overflow-hidden group">
           <div class="flex items-center gap-2 mb-4 border-b border-[var(--border-subtle)] pb-3">
             <div class="flex gap-1.5">
               <div class="w-3 h-3 rounded-full bg-[#ff5f56]"></div>
               <div class="w-3 h-3 rounded-full bg-[#ffbd2e]"></div>
               <div class="w-3 h-3 rounded-full bg-[#27c93f]"></div>
             </div>
-            <span class="text-[10px] font-mono text-[var(--text-tertiary)] ml-2">whispervibe --demo --context={activeVibe.id}</span>
+            <span class="text-[10px] font-mono text-[var(--text-tertiary)] ml-2 uppercase tracking-tighter">whispervibe // context: {activeVibe.label}</span>
           </div>
 
-          <div class="text-left font-mono text-sm space-y-4">
-            <div class="flex items-start gap-4">
-              <div class="flex-grow">
-                <p class="text-[var(--text-tertiary)] text-xs uppercase tracking-widest mb-1">Voice Input</p>
-                <div class="flex items-center gap-3">
-                  <div class="flex items-end gap-[2px] h-4">
-                    <div class="w-[2px] bg-[var(--red)] animate-[wave_1s_infinite_0s]"></div>
-                    <div class="w-[2px] bg-[var(--red)] animate-[wave_1s_infinite_0.2s]"></div>
-                    <div class="w-[2px] bg-[var(--red)] animate-[wave_1s_infinite_0.4s]"></div>
-                    <div class="w-[2px] bg-[var(--red)] animate-[wave_1s_infinite_0.1s]"></div>
-                  </div>
-                  <p class="text-white opacity-80 italic">"{activeVibe.input}"</p>
+          <div class="text-left font-mono text-sm space-y-6">
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <p class="text-[var(--text-tertiary)] text-[10px] uppercase tracking-[0.2em]">Voice Processing</p>
+                <div class="flex items-end gap-[2px] h-3">
+                  <div class="w-[2px] bg-[var(--red)] animate-[wave_0.8s_infinite_0s]"></div>
+                  <div class="w-[2px] bg-[var(--red)] animate-[wave_0.8s_infinite_0.2s]"></div>
+                  <div class="w-[2px] bg-[var(--red)] animate-[wave_0.8s_infinite_0.4s]"></div>
+                  <div class="w-[2px] bg-[var(--red)] animate-[wave_0.8s_infinite_0.1s]"></div>
                 </div>
               </div>
+              <p class="text-white opacity-60 italic text-sm leading-relaxed">"{activeVibe.input}"</p>
             </div>
 
-            <div class="pt-4 border-t border-[var(--border-subtle)]">
-              <p class="text-[var(--accent)] text-xs uppercase tracking-widest mb-2 font-bold">Whispervibe Output</p>
-              <div class="min-h-[1.5rem] flex">
+            <div class="pt-4 border-t border-[var(--border-subtle)/30]">
+              <div class="flex items-center justify-between mb-3">
+                <p class="text-[var(--accent)] text-[10px] uppercase tracking-[0.2em] font-bold">Transcription Output</p>
+                {#if showPasted}
+                  <span class="text-[var(--green)] text-[10px] font-bold animate-bounce tracking-widest uppercase">⏎ Sent to cursor</span>
+                {/if}
+              </div>
+              <div class="min-h-[1.5rem] bg-[var(--bg-deep)] p-3 rounded-lg border border-[var(--border-subtle)] shadow-inner flex items-center">
+                <span class="text-[var(--text-tertiary)] mr-2 opacity-30 select-none">$</span>
                 <p class="text-[var(--green)]">
                   {displayedOutput}
-                  <span class="inline-block w-2 h-4 bg-[var(--green)] ml-1 animate-[blink_1s_infinite]"></span>
+                  <span class="inline-block w-2 h-4 bg-[var(--green)] ml-1 align-middle {isTyping ? 'opacity-100' : 'animate-[blink_1s_infinite]'}"></span>
                 </p>
               </div>
             </div>
           </div>
+
+          <!-- Decorative Glow -->
+          <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-[var(--accent)] opacity-5 blur-[60px] pointer-events-none"></div>
         </div>
       </div>
     </div>
@@ -211,11 +236,16 @@
   <!-- CTA Section -->
   <section class="py-24 px-6 border-t border-[var(--border-subtle)] bg-[radial-gradient(circle_at_bottom,var(--accent-glow),transparent_50%)]">
     <div class="max-w-4xl mx-auto text-center">
-      <h2 class="text-4xl font-bold mb-6 text-white">Ready to change how you code?</h2>
-      <p class="text-xl text-[var(--text-secondary)] mb-10">Download whispervibe for macOS today and start vibe coding.</p>
-      <a href="https://github.com/timmeromberg/whisper-dic" class="px-10 py-5 rounded-[var(--radius-lg)] bg-white text-black font-bold text-lg hover:scale-105 transition-transform shadow-2xl">
-        Get whispervibe
-      </a>
+      <h2 class="text-4xl font-bold mb-6 text-white text-balance">Ready to change how you code?</h2>
+      <p class="text-xl text-[var(--text-secondary)] mb-10">Download whispervibe for macOS and Windows today and start vibe coding.</p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="https://github.com/timmeromberg/whisper-dic/releases" class="px-10 py-5 rounded-[var(--radius-lg)] bg-white text-black font-bold text-lg hover:scale-105 transition-transform shadow-2xl">
+          Get for macOS
+        </a>
+        <a href="https://github.com/timmeromberg/whisper-dic/releases" class="px-10 py-5 rounded-[var(--radius-lg)] bg-[var(--bg-raised)] text-white border border-[var(--border-default)] font-bold text-lg hover:bg-[var(--bg-hover)] transition-colors shadow-2xl">
+          Get for Windows
+        </a>
+      </div>
     </div>
   </section>
 
@@ -224,13 +254,14 @@
     <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
       <div class="flex items-center gap-3">
         <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--accent)] to-[#a855f7] flex items-center justify-center font-bold text-white shadow-lg">W</div>
-        <span class="font-bold text-[var(--text-secondary)] tracking-tight">whispervibe</span>
+        <span class="font-bold text-[var(--text-secondary)] tracking-tight uppercase">whispervibe</span>
       </div>
       
       <div class="flex gap-8 text-sm text-[var(--text-secondary)]">
-        <a href="https://github.com/timmeromberg/whisper-dic/tree/main/docs" class="hover:text-white transition-colors">Documentation</a>
-        <a href="https://github.com/timmeromberg/whisper-dic/blob/main/LICENSE" class="hover:text-white transition-colors">License (MIT)</a>
+        <a href="https://github.com/timmeromberg/whisper-dic/tree/main/docs" class="hover:text-white transition-colors">Docs</a>
+        <a href="https://github.com/timmeromberg/whisper-dic/blob/main/LICENSE" class="hover:text-white transition-colors">License</a>
         <a href="https://github.com/timmeromberg/whisper-dic/issues" class="hover:text-white transition-colors">Privacy</a>
+        <a href="https://github.com/timmeromberg/whisper-dic" class="hover:text-white transition-colors">GitHub</a>
       </div>
       
       <p class="text-xs text-[var(--text-tertiary)]">© 2026 Timme Romberg</p>
@@ -246,6 +277,6 @@
 
   @keyframes wave {
     0%, 100% { height: 4px; }
-    50% { height: 16px; }
+    50% { height: 16px; opacity: 0.5; }
   }
 </style>
