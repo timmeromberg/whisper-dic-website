@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "DM Sans";
+  src: url("/fonts/DMSans-Variable.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-Variable.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+}
+
+:root {
+  --bg-deep: #09090b;
+  --bg-base: #0c0c0f;
+  --bg-surface: #131316;
+  --bg-raised: #19191e;
+  --bg-overlay: #1f1f26;
+  --bg-hover: #25252e;
+  --border-subtle: rgba(255,255,255,0.06);
+  --border-default: rgba(255,255,255,0.09);
+  --border-strong: rgba(255,255,255,0.14);
+  --text-primary: #ececf1;
+  --text-secondary: #a8a8bd;
+  --text-tertiary: #9c9cb3;
+  --accent: #6c5ce7;
+  --accent-soft: rgba(108,92,231,0.12);
+  --accent-glow: rgba(108,92,231,0.25);
+  --red: #ff4757;
+  --red-soft: rgba(255,71,87,0.12);
+  --red-glow: rgba(255,71,87,0.3);
+  --green: #2ed573;
+  --green-soft: rgba(46,213,115,0.12);
+  --amber: #ffa502;
+  --amber-soft: rgba(255,165,2,0.12);
+  --amber-glow: rgba(255,165,2,0.25);
+  --font: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono: 'JetBrains Mono', 'SF Mono', monospace;
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --transition: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body {
+  background-color: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+pre, code {
+  font-family: var(--mono);
+}
