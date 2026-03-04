@@ -29,36 +29,50 @@
   let displayedOutput = $state('');
   let isTyping = $state(false);
   let showPasted = $state(false);
-  let typingTimeout: ReturnType<typeof setTimeout>;
+  
+  // Simple timeout refs to clear
+  let typingTimer: any = null;
+  let pasteTimer: any = null;
 
-  function typeOutput(text: string) {
-    // Clear any existing animation
-    clearTimeout(typingTimeout);
+  function cleanup() {
+    if (typingTimer) clearInterval(typingTimer);
+    if (pasteTimer) clearTimeout(pasteTimer);
+  }
+
+  function startTyping(text: string) {
+    cleanup();
+    
     isTyping = true;
     displayedOutput = '';
     showPasted = false;
     
     let i = 0;
-    
-    function step() {
+    // Use a safe, consistent interval
+    typingTimer = setInterval(() => {
       if (i < text.length) {
         displayedOutput += text[i];
         i++;
-        typingTimeout = setTimeout(step, 20 + Math.random() * 30);
       } else {
+        clearInterval(typingTimer);
         isTyping = false;
-        typingTimeout = setTimeout(() => {
+        
+        // Show "Sent to cursor" briefly
+        pasteTimer = setTimeout(() => {
           showPasted = true;
-          typingTimeout = setTimeout(() => showPasted = false, 1500);
+          pasteTimer = setTimeout(() => {
+            showPasted = false;
+          }, 2000);
         }, 500);
       }
-    }
-    
-    step();
+    }, 40);
   }
 
   $effect(() => {
-    typeOutput(activeVibe.output);
+    // React to vibe change
+    startTyping(activeVibe.output);
+    
+    // Cleanup on component destroy
+    return () => cleanup();
   });
 
   const features = [
@@ -95,7 +109,7 @@
 <main class="flex-grow">
   <!-- Hero Section -->
   <section class="relative overflow-hidden pt-24 pb-20 px-6">
-    <div class="absolute inset-0 z-0">
+    <div class="absolute inset-0 z-0 pointer-events-none">
       <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-[radial-gradient(circle,var(--accent-glow),transparent_70%)] opacity-50"></div>
     </div>
 
@@ -114,29 +128,29 @@
         AI-powered cleanup makes your spoken words perfect before they hit the cursor.
       </p>
 
-      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-        <a href="https://github.com/timmeromberg/whisper-dic/releases" class="px-8 py-4 rounded-[var(--radius)] bg-[var(--accent)] text-white font-semibold shadow-[0_0_20px_var(--accent-glow)] hover:scale-105 transition-transform flex items-center gap-2">
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 relative z-20">
+        <a href="https://github.com/timmeromberg/whisper-dic/releases" target="_blank" class="px-8 py-4 rounded-[var(--radius)] bg-[var(--accent)] text-white font-semibold shadow-[0_0_20px_var(--accent-glow)] hover:scale-105 transition-transform flex items-center gap-2 cursor-pointer">
           <span></span> Download for macOS
         </a>
-        <a href="https://github.com/timmeromberg/whisper-dic/releases" class="px-8 py-4 rounded-[var(--radius)] bg-[var(--bg-raised)] border border-[var(--border-default)] text-[var(--text-primary)] font-semibold hover:bg-[var(--bg-hover)] transition-colors flex items-center gap-2">
+        <a href="https://github.com/timmeromberg/whisper-dic/releases" target="_blank" class="px-8 py-4 rounded-[var(--radius)] bg-[var(--bg-raised)] border border-[var(--border-default)] text-[var(--text-primary)] font-semibold hover:bg-[var(--bg-hover)] transition-colors flex items-center gap-2 cursor-pointer">
           <span>⊞</span> Download for Windows
         </a>
       </div>
 
       <!-- Interactive Vibe Demo -->
-      <div class="mt-16 max-w-3xl mx-auto">
-        <div class="flex gap-2 mb-4 justify-center md:justify-start">
+      <div class="mt-16 max-w-3xl mx-auto relative z-20">
+        <div class="flex gap-2 mb-4 justify-center md:justify-start overflow-x-auto pb-2">
           {#each vibes as vibe}
             <button 
-              onclick={() => activeVibe = vibe}
-              class="px-4 py-2 rounded-lg text-sm font-medium transition-all border {activeVibe.id === vibe.id ? 'bg-[var(--accent-soft)] border-[var(--accent)] text-white shadow-[0_0_10px_var(--accent-glow)]' : 'bg-[var(--bg-surface)] border-[var(--border-subtle)] text-[var(--text-tertiary)] hover:border-[var(--border-strong)] hover:text-[var(--text-secondary)]'}"
+              onclick={() => { console.log("Clicked vibe:", vibe.label); activeVibe = vibe; }}
+              class="px-4 py-2 rounded-lg text-sm font-medium transition-all border whitespace-nowrap cursor-pointer {activeVibe.id === vibe.id ? 'bg-[var(--accent-soft)] border-[var(--accent)] text-white shadow-[0_0_10px_var(--accent-glow)]' : 'bg-[var(--bg-surface)] border-[var(--border-subtle)] text-[var(--text-tertiary)] hover:border-[var(--border-strong)] hover:text-[var(--text-secondary)]'}"
             >
               <span class="mr-2">{vibe.icon}</span>{vibe.label}
             </button>
           {/each}
         </div>
 
-        <div class="p-6 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] backdrop-blur-sm relative overflow-hidden group">
+        <div class="p-6 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] backdrop-blur-sm relative overflow-hidden group shadow-2xl">
           <div class="flex items-center gap-2 mb-4 border-b border-[var(--border-subtle)] pb-3">
             <div class="flex gap-1.5">
               <div class="w-3 h-3 rounded-full bg-[#ff5f56]"></div>
@@ -163,15 +177,16 @@
             <div class="pt-4 border-t border-[var(--border-subtle)/30]">
               <div class="flex items-center justify-between mb-3">
                 <p class="text-[var(--accent)] text-[10px] uppercase tracking-[0.2em] font-bold">Transcription Output</p>
-                {#if showPasted}
-                  <span class="text-[var(--green)] text-[10px] font-bold animate-bounce tracking-widest uppercase">⏎ Sent to cursor</span>
-                {/if}
+                <div class="h-4">
+                  {#if showPasted}
+                    <span class="text-[var(--green)] text-[10px] font-bold animate-bounce tracking-widest uppercase">⏎ Sent to cursor</span>
+                  {/if}
+                </div>
               </div>
-              <div class="min-h-[1.5rem] bg-[var(--bg-deep)] p-3 rounded-lg border border-[var(--border-subtle)] shadow-inner flex items-center">
-                <span class="text-[var(--text-tertiary)] mr-2 opacity-30 select-none">$</span>
-                <p class="text-[var(--green)]">
-                  {displayedOutput}
-                  <span class="inline-block w-2 h-4 bg-[var(--green)] ml-1 align-middle {isTyping ? 'opacity-100' : 'animate-[blink_1s_infinite]'}"></span>
+              <div class="min-h-[3rem] bg-[var(--bg-deep)] p-4 rounded-lg border border-[var(--border-strong)] shadow-inner flex items-center">
+                <span class="text-[var(--text-tertiary)] mr-3 opacity-30 select-none">$</span>
+                <p class="text-[var(--green)] leading-relaxed">
+                  {displayedOutput}<span class="inline-block w-2 h-4 bg-[var(--green)] ml-1 align-middle {isTyping ? 'opacity-100' : 'animate-[blink_1s_infinite]'}"></span>
                 </p>
               </div>
             </div>
@@ -239,10 +254,10 @@
       <h2 class="text-4xl font-bold mb-6 text-white text-balance">Ready to change how you code?</h2>
       <p class="text-xl text-[var(--text-secondary)] mb-10">Download whispervibe for macOS and Windows today and start vibe coding.</p>
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-        <a href="https://github.com/timmeromberg/whisper-dic/releases" class="px-10 py-5 rounded-[var(--radius-lg)] bg-white text-black font-bold text-lg hover:scale-105 transition-transform shadow-2xl">
+        <a href="https://github.com/timmeromberg/whisper-dic/releases" target="_blank" class="px-10 py-5 rounded-[var(--radius-lg)] bg-white text-black font-bold text-lg hover:scale-105 transition-transform shadow-2xl cursor-pointer">
           Get for macOS
         </a>
-        <a href="https://github.com/timmeromberg/whisper-dic/releases" class="px-10 py-5 rounded-[var(--radius-lg)] bg-[var(--bg-raised)] text-white border border-[var(--border-default)] font-bold text-lg hover:bg-[var(--bg-hover)] transition-colors shadow-2xl">
+        <a href="https://github.com/timmeromberg/whisper-dic/releases" target="_blank" class="px-10 py-5 rounded-[var(--radius-lg)] bg-[var(--bg-raised)] text-white border border-[var(--border-default)] font-bold text-lg hover:bg-[var(--bg-hover)] transition-colors shadow-2xl cursor-pointer">
           Get for Windows
         </a>
       </div>
@@ -258,10 +273,10 @@
       </div>
       
       <div class="flex gap-8 text-sm text-[var(--text-secondary)]">
-        <a href="https://github.com/timmeromberg/whisper-dic/tree/main/docs" class="hover:text-white transition-colors">Docs</a>
-        <a href="https://github.com/timmeromberg/whisper-dic/blob/main/LICENSE" class="hover:text-white transition-colors">License</a>
-        <a href="https://github.com/timmeromberg/whisper-dic/issues" class="hover:text-white transition-colors">Privacy</a>
-        <a href="https://github.com/timmeromberg/whisper-dic" class="hover:text-white transition-colors">GitHub</a>
+        <a href="https://github.com/timmeromberg/whisper-dic/tree/main/docs" target="_blank" class="hover:text-white transition-colors">Docs</a>
+        <a href="https://github.com/timmeromberg/whisper-dic/blob/main/LICENSE" target="_blank" class="hover:text-white transition-colors">License</a>
+        <a href="https://github.com/timmeromberg/whisper-dic/issues" target="_blank" class="hover:text-white transition-colors">Privacy</a>
+        <a href="https://github.com/timmeromberg/whisper-dic" target="_blank" class="hover:text-white transition-colors">GitHub</a>
       </div>
       
       <p class="text-xs text-[var(--text-tertiary)]">© 2026 Timme Romberg</p>
@@ -278,5 +293,11 @@
   @keyframes wave {
     0%, 100% { height: 4px; }
     50% { height: 16px; opacity: 0.5; }
+  }
+  
+  /* Ensure buttons are actually clickable and have pointer cursor */
+  button, a {
+    cursor: pointer !important;
+    pointer-events: auto !important;
   }
 </style>
