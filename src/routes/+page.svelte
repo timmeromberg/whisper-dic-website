@@ -1,8 +1,52 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+
+  const vibes = [
+    {
+      id: 'claude',
+      label: 'Claude Code',
+      icon: '🤖',
+      input: 'Um, hey Claude, could you, uh, refactor this function to use, like, async await?',
+      output: 'Refactor this function to use async/await.'
+    },
+    {
+      id: 'terminal',
+      label: 'Terminal',
+      icon: '🐚',
+      input: 'Wait, show me all the, um, docker containers that are running on port 8080.',
+      output: 'docker ps --filter "publish=8080"'
+    },
+    {
+      id: 'slack',
+      label: 'Communication',
+      icon: '💬',
+      input: 'Tell the team that the, uh, deploy is delayed by 10 minutes because of the CI pipeline.',
+      output: 'The deploy is delayed by 10 minutes due to the CI pipeline.'
+    }
+  ];
+
+  let activeVibe = $state(vibes[0]);
+  let displayedOutput = $state('');
+  let isTyping = $state(false);
+
+  async function typeOutput(text: string) {
+    isTyping = true;
+    displayedOutput = '';
+    for (let i = 0; i < text.length; i++) {
+      displayedOutput += text[i];
+      await new Promise(r => setTimeout(r, 20 + Math.random() * 30));
+    }
+    isTyping = false;
+  }
+
+  $effect(() => {
+    typeOutput(activeVibe.output);
+  });
+
   const features = [
     {
       title: "Hacker-First",
-      desc: "Open source, cross-platform, and built for speed. No subscriptions, just performance.",
+      desc: "Built for speed. No subscriptions, just performance. The ultimate tool for vibe coding.",
       icon: "⚡"
     },
     {
@@ -61,21 +105,55 @@
         </a>
       </div>
 
-      <div class="mt-16 p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] max-w-3xl mx-auto backdrop-blur-sm">
-        <div class="flex items-center gap-2 mb-3 border-b border-[var(--border-subtle)] pb-2">
-          <div class="flex gap-1.5">
-            <div class="w-3 h-3 rounded-full bg-[#ff5f56]"></div>
-            <div class="w-3 h-3 rounded-full bg-[#ffbd2e]"></div>
-            <div class="w-3 h-3 rounded-full bg-[#27c93f]"></div>
-          </div>
-          <span class="text-[10px] font-mono text-[var(--text-tertiary)] ml-2">whispervibe --demo</span>
+      <!-- Interactive Vibe Demo -->
+      <div class="mt-16 max-w-3xl mx-auto">
+        <div class="flex gap-2 mb-4 justify-center md:justify-start">
+          {#each vibes as vibe}
+            <button 
+              onclick={() => activeVibe = vibe}
+              class="px-4 py-2 rounded-lg text-sm font-medium transition-all border {activeVibe.id === vibe.id ? 'bg-[var(--accent-soft)] border-[var(--accent)] text-white shadow-[0_0_10px_var(--accent-glow)]' : 'bg-[var(--bg-surface)] border-[var(--border-subtle)] text-[var(--text-tertiary)] hover:border-[var(--border-strong)] hover:text-[var(--text-secondary)]'}"
+            >
+              <span class="mr-2">{vibe.icon}</span>{vibe.label}
+            </button>
+          {/each}
         </div>
-        <div class="text-left font-mono text-sm space-y-2">
-          <p class="text-[var(--text-tertiary)] italic">// You say:</p>
-          <p class="text-white">"Um, hey Claude, could you, uh, refactor this function to use, like, async await?"</p>
-          <div class="h-4"></div>
-          <p class="text-[var(--accent)] italic">// whispervibe writes instantly:</p>
-          <p class="text-[var(--green)]">"Refactor this function to use async/await."</p>
+
+        <div class="p-6 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] backdrop-blur-sm relative overflow-hidden">
+          <div class="flex items-center gap-2 mb-4 border-b border-[var(--border-subtle)] pb-3">
+            <div class="flex gap-1.5">
+              <div class="w-3 h-3 rounded-full bg-[#ff5f56]"></div>
+              <div class="w-3 h-3 rounded-full bg-[#ffbd2e]"></div>
+              <div class="w-3 h-3 rounded-full bg-[#27c93f]"></div>
+            </div>
+            <span class="text-[10px] font-mono text-[var(--text-tertiary)] ml-2">whispervibe --demo --context={activeVibe.id}</span>
+          </div>
+
+          <div class="text-left font-mono text-sm space-y-4">
+            <div class="flex items-start gap-4">
+              <div class="flex-grow">
+                <p class="text-[var(--text-tertiary)] text-xs uppercase tracking-widest mb-1">Voice Input</p>
+                <div class="flex items-center gap-3">
+                  <div class="flex items-end gap-[2px] h-4">
+                    <div class="w-[2px] bg-[var(--red)] animate-[wave_1s_infinite_0s]"></div>
+                    <div class="w-[2px] bg-[var(--red)] animate-[wave_1s_infinite_0.2s]"></div>
+                    <div class="w-[2px] bg-[var(--red)] animate-[wave_1s_infinite_0.4s]"></div>
+                    <div class="w-[2px] bg-[var(--red)] animate-[wave_1s_infinite_0.1s]"></div>
+                  </div>
+                  <p class="text-white opacity-80 italic">"{activeVibe.input}"</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-[var(--border-subtle)]">
+              <p class="text-[var(--accent)] text-xs uppercase tracking-widest mb-2 font-bold">Whispervibe Output</p>
+              <div class="min-h-[1.5rem] flex">
+                <p class="text-[var(--green)]">
+                  {displayedOutput}
+                  <span class="inline-block w-2 h-4 bg-[var(--green)] ml-1 animate-[blink_1s_infinite]"></span>
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -86,8 +164,8 @@
     <div class="max-w-6xl mx-auto">
       <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
         {#each features as feature}
-          <div class="p-8 rounded-[var(--radius-lg)] bg-[var(--bg-surface)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] transition-colors">
-            <div class="text-3xl mb-4">{feature.icon}</div>
+          <div class="p-8 rounded-[var(--radius-lg)] bg-[var(--bg-surface)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] transition-colors group">
+            <div class="text-3xl mb-4 group-hover:scale-110 transition-transform">{feature.icon}</div>
             <h3 class="text-lg font-bold mb-2">{feature.title}</h3>
             <p class="text-[var(--text-secondary)] text-sm leading-relaxed">{feature.desc}</p>
           </div>
@@ -98,11 +176,12 @@
 
   <!-- Benchmarks Section -->
   <section class="py-24 px-6 border-t border-[var(--border-subtle)]">
-    <div class="max-w-4xl mx-auto">
-      <h2 class="text-3xl font-bold text-center mb-12">Built for Performance</h2>
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="text-3xl font-bold mb-4">Built for Performance</h2>
+      <p class="text-[var(--text-secondary)] mb-12 max-w-2xl mx-auto">We benchmark every stage of the pipeline. whispervibe is optimized for the fastest possible key-to-cursor latency.</p>
       
-      <div class="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-surface)]">
-        <table class="w-full text-left font-mono text-sm">
+      <div class="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-left">
+        <table class="w-full font-mono text-sm">
           <thead>
             <tr class="border-b border-[var(--border-subtle)] bg-[var(--bg-raised)]">
               <th class="p-4 font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Tool</th>
@@ -123,9 +202,20 @@
           </tbody>
         </table>
       </div>
-      <p class="mt-4 text-[var(--text-tertiary)] text-xs text-center italic">
+      <p class="mt-4 text-[var(--text-tertiary)] text-xs italic">
         *Streaming tools feel lower but lack AI rewriting in batch.
       </p>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-24 px-6 border-t border-[var(--border-subtle)] bg-[radial-gradient(circle_at_bottom,var(--accent-glow),transparent_50%)]">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="text-4xl font-bold mb-6 text-white">Ready to change how you code?</h2>
+      <p class="text-xl text-[var(--text-secondary)] mb-10">Download whispervibe for macOS today and start vibe coding.</p>
+      <a href="https://github.com/timmeromberg/whisper-dic" class="px-10 py-5 rounded-[var(--radius-lg)] bg-white text-black font-bold text-lg hover:scale-105 transition-transform shadow-2xl">
+        Get whispervibe
+      </a>
     </div>
   </section>
 
@@ -147,3 +237,15 @@
     </div>
   </footer>
 </main>
+
+<style>
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  @keyframes wave {
+    0%, 100% { height: 4px; }
+    50% { height: 16px; }
+  }
+</style>
