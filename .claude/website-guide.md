@@ -58,6 +58,12 @@ Tailwind v4 is configured via the `@tailwindcss/vite` plugin in `vite.config.ts`
 - `pnpm run check` — type check with svelte-check
 - `pnpm preview` — preview production build
 
+## Commits
+
+- **One commit per fix or feature** — never batch multiple changes into one commit
+- **Every commit MUST include a version bump.** Bump `VERSION`, run `./scripts/sync-version.sh`, mention the new version in the commit message (e.g. `fix: improve contrast (0.0.5)`)
+- Commit messages: imperative lowercase, e.g. `feat:`, `fix:`, `docs:`, `chore:`
+
 ## Versioning
 
 - `VERSION` is source of truth for website version
