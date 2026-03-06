@@ -1,42 +1,75 @@
-# sv
+# whisper-dic-website
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Static landing page for [whispervibe](https://github.com/timmeromberg/whisper-dic) — the open-source hold-to-dictate tool.
 
-## Creating a project
+## Stack
 
-If you're seeing this, you've probably already done this step. Congrats!
+- **SvelteKit** (Svelte 5) with `adapter-static`
+- **Tailwind CSS v4** via Vite plugin
+- **Vite 7** build tooling
+- **TypeScript** strict mode
 
-```sh
-# create a new project
-npx sv create my-app
+## Development
+
+Prerequisites: Node 20+, pnpm.
+
+```bash
+pnpm install
+pnpm dev          # dev server on localhost:5173
+pnpm run check    # type check
+pnpm run build    # static build → build/
+pnpm preview      # preview production build
 ```
 
-To recreate this project with the same configuration:
+## Project Structure
 
-```sh
-# recreate this project
-npx sv@0.12.5 create --template minimal --types ts --no-install .
+```
+src/
+├── routes/
+│   ├── +layout.svelte    # root layout (metadata, global wrapper)
+│   └── +page.svelte      # landing page (all sections)
+├── lib/
+│   ├── assets/favicon.svg
+│   └── index.ts
+├── app.css               # global styles, CSS variables, font imports
+├── app.html              # HTML template
+└── app.d.ts              # TypeScript declarations
+static/
+├── fonts/                # DM Sans, JetBrains Mono (variable TTFs)
+└── robots.txt
+scripts/
+└── sync-version.sh       # sync VERSION → package.json
 ```
 
-## Developing
+## Design System
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+Dark theme matching the desktop app aesthetic.
 
-```sh
-npm run dev
+**Fonts:** DM Sans (body), JetBrains Mono (code) — loaded from `static/fonts/`.
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+**Colors** (CSS custom properties in `app.css`):
+
+| Token | Purpose |
+|---|---|
+| `--bg-deep` / `--bg-base` / `--bg-surface` | Background layers |
+| `--text-primary` / `--text-secondary` | Typography |
+| `--accent` (`#6c5ce7`) | Purple accent, buttons, highlights |
+| `--green` / `--red` / `--amber` | Status colors with `-soft` and `-glow` variants |
+
+## Versioning
+
+`VERSION` is the source of truth. After bumping, run:
+
+```bash
+./scripts/sync-version.sh
 ```
 
-## Building
+This updates `package.json` to match.
 
-To create a production version of your app:
+## Deployment
 
-```sh
-npm run build
-```
+`pnpm run build` outputs a fully static site to `build/`. The SvelteKit config uses `fallback: '404.html'` for SPA-style routing on static hosts like GitHub Pages.
 
-You can preview the production build with `npm run preview`.
+## License
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+MIT

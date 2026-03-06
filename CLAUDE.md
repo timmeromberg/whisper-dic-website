@@ -5,3 +5,4 @@ This file is an index only.
 ## Website Guide
 
 - `.claude/website-guide.md`
+- `README.md` — user-facing project overview
